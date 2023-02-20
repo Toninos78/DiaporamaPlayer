@@ -19,4 +19,10 @@ namespace DiaporamaPlayer
         BottomRight,
         Random
     }
+
+    internal enum Orientation
+    {
+        Portrait,
+        Landscape,
+    }
 }

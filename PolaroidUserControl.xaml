@@ -11,6 +11,6 @@
             </Rectangle.Fill>
         </Rectangle>
         <Rectangle Fill="#EEE" MinHeight="200" MinWidth="200" RadiusX="10" RadiusY="10" Stroke="#BBB" StrokeThickness="1"/>
-        <Image Source="{Binding ElementName=uc, Path=PhotoSource}" Margin="20, 20, 20, 40"/>
+        <Image Source="{Binding ElementName=uc, Path=PhotoSource}" Margin="20, 20, 20, 20"/>
     </Grid>
 </UserControl>

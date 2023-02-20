@@ -5,25 +5,23 @@ namespace DiaporamaPlayer
 {
     internal class PolaroidAnimator
     {
-        private Animator animator = new Animator();
+        private Animator animator = new Animator(); // TODO: a injecter au constructeur
         private readonly static Random random = new Random();
         private readonly Size screenSize;
-        private readonly DiaporamaConfiguration configuration;
 
-        public PolaroidAnimator(Size screenSize, DiaporamaConfiguration configuration)
+        public PolaroidAnimator(Size screenSize)
         {
-            this.configuration = configuration;
             this.screenSize = screenSize;
         }
 
-        public void Animate(DiaporamaStep diaporamaStep, PolaroidUserControl image)
+        public void Animate(DiaporamaStep diaporamaStep, PolaroidUserControl polaroid, float maximumAbsoluteStartAngleDeviation, float maximumAbsoluteEndAngleDeviation)
         {
-            double startAngle = 2 * configuration.MaximumAbsoluteStartAngleDeviation * (random.NextDouble() - 0.5);
-            double endAngle = 2 * configuration.MaximumAbsoluteEndAngleDeviation * (random.NextDouble() - 0.5);
-            Point startPosition = GetStartPosition(diaporamaStep.Source, image.RenderSize);
-            Point endPosition = GetEndPosition(image, diaporamaStep.FinalLayout);
+            double startAngle = 2 * maximumAbsoluteStartAngleDeviation * (random.NextDouble() - 0.5);
+            double endAngle = 2 * maximumAbsoluteEndAngleDeviation * (random.NextDouble() - 0.5);
+            Point startPosition = GetStartPosition(diaporamaStep.Source, polaroid.RenderSize);
+            Point endPosition = GetEndPosition(polaroid, diaporamaStep.FinalLayout);
 
-            animator.StartAnimation(image, startPosition, endPosition, startAngle, endAngle, diaporamaStep.Duration);
+            animator.StartAnimation(polaroid, startPosition, endPosition, startAngle, endAngle, diaporamaStep.Duration);
         }
 
         private Point GetStartPosition(StepSource stepSource, Size animatedElementSize)
@@ -64,5 +62,4 @@ namespace DiaporamaPlayer
             };
         }
     }
-
 }
