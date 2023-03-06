@@ -9,11 +9,19 @@
 
   <ItemGroup>
     <None Remove="Assets\background.jpeg" />
+    <None Remove="Assets\kraft.jpg" />
+    <None Remove="Assets\logo.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Assets\background.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\kraft.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
 

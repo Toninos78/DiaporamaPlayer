@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace DiaporamaPlayer
 {
@@ -14,9 +10,9 @@ namespace DiaporamaPlayer
     {
         private readonly Panel destinationPanel;
         private readonly string scriptFullpath;
-        private readonly MediaPlayer mediaPlayer = new MediaPlayer();
         private readonly PolaroidAnimator polaroidAnimator;
         private readonly PolaroidFactory polaroidFactory;
+        private readonly SoundPlayer soundPlayer;
 
         public Player(Panel destinationPanel, string scriptFullpath)
         {
@@ -24,59 +20,40 @@ namespace DiaporamaPlayer
             this.scriptFullpath = scriptFullpath;
             this.polaroidAnimator = new PolaroidAnimator(destinationPanel.RenderSize); // TODO: not instantiate here
             this.polaroidFactory = new PolaroidFactory(destinationPanel.RenderSize);  // TODO: not instantiate here
+            this.soundPlayer = new SoundPlayer();
         }
 
         public async void Play()
         {
             DiaporamaScript script = ReadScriptFromFile(scriptFullpath);
+            var fadeoutAnimator = new FadeoutAnimator(this.destinationPanel, script.FadeoutDuration);
+            var polaroidRegistrer = new LayoutRegistrer<PolaroidUserControl>(script.MaximumPicturesPerLayout);
 
 #if !DEBUG
-            PlaySongIfDefined(script.SongFullpath);
+            this.soundPlayer.PlayIfSet(script.SongFullpath);
 #endif
 
-            await ExecuteStartTemporisationDelay(script);
-
-            var polaroidDictionary = new Dictionary<string, List<PolaroidUserControl>>();
+            await Task.Delay(script.StartTemporisationDuration);
 
             foreach (var currentStep in script.Steps)
             {
                 var polaroid = await PlayStepAsync(script, currentStep);
 
-                var toRemove = RegisterNewPolaroidAndGetPolaroidToRemove(polaroidDictionary, polaroid, currentStep.FinalLayout);
-                if (toRemove != null)
-                {
-                    this.destinationPanel.Children.Remove(toRemove);
-                }
+                FadeoutOutOldElementIfRequired(polaroidRegistrer, currentStep.FinalLayout, polaroid, fadeoutAnimator);
             }
         }
 
-        // TODO: extract in a dedicated service
-        private PolaroidUserControl? RegisterNewPolaroidAndGetPolaroidToRemove(Dictionary<string, List<PolaroidUserControl>> polaroidDictionary, PolaroidUserControl newPolaroid, FinalLayout layout)
+        private static void FadeoutOutOldElementIfRequired(
+            LayoutRegistrer<PolaroidUserControl> polaroidRegistrer,
+            FinalLayout finalLayout, 
+            PolaroidUserControl newPolaroid, 
+            FadeoutAnimator fadeoutAnimator)
         {
-            var orientation = newPolaroid.ActualHeight > newPolaroid.ActualWidth ? Orientation.Portrait : Orientation.Landscape;
-            var key = $"{orientation}-{layout}";
-
-            if (!polaroidDictionary.ContainsKey(key))
+            var polaroidToRemove = polaroidRegistrer.RegisterNewAndGetOldestElement(newPolaroid, finalLayout);
+            if (polaroidToRemove != null)
             {
-                polaroidDictionary.Add(key, new List<PolaroidUserControl>());
+                fadeoutAnimator.FadeOutAndRemove(polaroidToRemove);
             }
-
-            polaroidDictionary[key].Add(newPolaroid);
-
-            if (polaroidDictionary[key].Count > 2)
-            {
-                var polaroidToRemove = polaroidDictionary[key].ElementAt(0);
-                polaroidDictionary[key].Remove(polaroidToRemove);
-
-                return polaroidToRemove;
-            }
-
-            return null;
-        }
-
-        private static async Task ExecuteStartTemporisationDelay(DiaporamaScript script)
-        {
-            await Task.Delay(script.StartTemporisationDuration);
         }
 
         private async Task<PolaroidUserControl> PlayStepAsync(DiaporamaScript script, DiaporamaStep currentStep)
@@ -91,16 +68,6 @@ namespace DiaporamaPlayer
             await Task.Delay(currentStep.Duration);
 
             return polaroid;
-        }
-
-        // TODO: extract in dedicated service
-        private void PlaySongIfDefined(string songPath)
-        {
-            if (!string.IsNullOrEmpty(songPath))
-            {
-                mediaPlayer.Open(new Uri(songPath));
-                mediaPlayer.Play();
-            }
         }
 
         private static DiaporamaScript ReadScriptFromFile(string source)

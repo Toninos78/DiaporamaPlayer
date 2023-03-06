@@ -8,11 +8,14 @@
         MinHeight="800"
         Title="MainWindow" ResizeMode="NoResize" BorderThickness="0" WindowStyle="None" WindowState="Maximized">
     <Canvas x:Name="canvas">
+        <Grid Width="{Binding ActualWidth, ElementName=canvas}">
+            <Image Source="/Assets/logo.png" Width="100" HorizontalAlignment="Center"/>
+        </Grid>
         <Canvas.CacheMode>
             <BitmapCache/>
         </Canvas.CacheMode>
         <Canvas.Background>
-            <ImageBrush ImageSource="/Assets/background.jpeg" Stretch="Fill" >
+            <ImageBrush ImageSource="/Assets/kraft.jpg" Stretch="Fill" >
             </ImageBrush>
         </Canvas.Background>
     </Canvas>
