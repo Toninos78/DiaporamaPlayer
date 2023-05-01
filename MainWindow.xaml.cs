@@ -21,12 +21,14 @@ namespace DiaporamaPlayer
                     return;
                 }
 
+                chevron.Visibility = Visibility.Visible;
+
                 isDiaporamaStarted = true;
                 Mouse.OverrideCursor = Cursors.None;
 
                 DiaporamaConfiguration configuration = new DiaporamaConfiguration();
                 var player = new Player(canvas, configuration.ScriptFullpath);
-                player.Play();
+                player.PlayAndExit();
             }
         }
     }

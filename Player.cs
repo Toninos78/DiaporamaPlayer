@@ -1,6 +1,5 @@
-﻿using System.IO;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
@@ -13,6 +12,7 @@ namespace DiaporamaPlayer
         private readonly PolaroidAnimator polaroidAnimator;
         private readonly PolaroidFactory polaroidFactory;
         private readonly SoundPlayer soundPlayer;
+        private readonly ScriptReader scriptReader;
 
         public Player(Panel destinationPanel, string scriptFullpath)
         {
@@ -21,15 +21,16 @@ namespace DiaporamaPlayer
             this.polaroidAnimator = new PolaroidAnimator(destinationPanel.RenderSize); // TODO: not instantiate here
             this.polaroidFactory = new PolaroidFactory(destinationPanel.RenderSize);  // TODO: not instantiate here
             this.soundPlayer = new SoundPlayer();
+            this.scriptReader = new ScriptReader();
         }
 
-        public async void Play()
+        public async void PlayAndExit()
         {
-            DiaporamaScript script = ReadScriptFromFile(scriptFullpath);
-            var fadeoutAnimator = new FadeoutAnimator(this.destinationPanel, script.FadeoutDuration);
+            DiaporamaScript script = this.scriptReader.ReadFromFile(scriptFullpath);
+            var fadeoutAnimator = new PanelChildFadoutAnimator(this.destinationPanel, script.FadeoutDuration);
             var polaroidRegistrer = new LayoutRegistrer<PolaroidUserControl>(script.MaximumPicturesPerLayout);
 
-#if !DEBUG
+#if DEBUG
             this.soundPlayer.PlayIfSet(script.SongFullpath);
 #endif
 
@@ -37,24 +38,31 @@ namespace DiaporamaPlayer
 
             foreach (var currentStep in script.Steps)
             {
-                var polaroid = await PlayStepAsync(script, currentStep);
+                PolaroidUserControl newPolaroid = await PlayStepAsync(script, currentStep);
 
-                FadeoutOutOldElementIfRequired(polaroidRegistrer, currentStep.FinalLayout, polaroid, fadeoutAnimator);
+                var polaroidToRemove = polaroidRegistrer.RegisterNewAndGetOldestElement(newPolaroid, currentStep.FinalLayout);
+                if (polaroidToRemove != null)
+                {
+                    fadeoutAnimator.FadeOutAndRemove(polaroidToRemove);
+                }
             }
+
+            await Task.Delay(script.FinalFadeoutAfterLastStepDelay);
+
+            FadoutBackground(script.FinalFadeoutAfterLastStepDuration);
+
+            await soundPlayer.WaitUntilFinishedAsync();
+
+            Exit();
         }
 
-        private static void FadeoutOutOldElementIfRequired(
-            LayoutRegistrer<PolaroidUserControl> polaroidRegistrer,
-            FinalLayout finalLayout, 
-            PolaroidUserControl newPolaroid, 
-            FadeoutAnimator fadeoutAnimator)
+        private void FadoutBackground(TimeSpan duration)
         {
-            var polaroidToRemove = polaroidRegistrer.RegisterNewAndGetOldestElement(newPolaroid, finalLayout);
-            if (polaroidToRemove != null)
-            {
-                fadeoutAnimator.FadeOutAndRemove(polaroidToRemove);
-            }
+            var panelFadout = new FadeoutAnimator(this.destinationPanel, duration);
+            panelFadout.Fadeout();
         }
+
+        private static void Exit() => System.Windows.Application.Current.Shutdown();
 
         private async Task<PolaroidUserControl> PlayStepAsync(DiaporamaScript script, DiaporamaStep currentStep)
         {
@@ -68,14 +76,6 @@ namespace DiaporamaPlayer
             await Task.Delay(currentStep.Duration);
 
             return polaroid;
-        }
-
-        private static DiaporamaScript ReadScriptFromFile(string source)
-        {
-            var options = new JsonSerializerOptions { Converters = { new JsonStringEnumConverter() } };
-            var rawText = File.ReadAllText(source);
-
-            return JsonSerializer.Deserialize<DiaporamaScript>(rawText, options)!;
         }
 
         private PolaroidUserControl CreatePolaroid(PolaroidFactory factory, string pictureFullpath, float pictureMarginRatio)

@@ -6,10 +6,10 @@
         mc:Ignorable="d"
         MinWidth="1200"
         MinHeight="800"
-        Title="MainWindow" ResizeMode="NoResize" BorderThickness="0" WindowStyle="None" WindowState="Maximized">
+        Title="MainWindow" ResizeMode="NoResize" BorderThickness="0" WindowStyle="None" WindowState="Maximized" Background="Black">
     <Canvas x:Name="canvas">
         <Grid Width="{Binding ActualWidth, ElementName=canvas}">
-            <Image Source="/Assets/logo.png" Width="100" HorizontalAlignment="Center"/>
+            <Image Source="/Assets/logo.png" Width="100" HorizontalAlignment="Center" x:Name="chevron" Visibility="Hidden"/>
         </Grid>
         <Canvas.CacheMode>
             <BitmapCache/>
