@@ -2,6 +2,6 @@
 {
     internal class DiaporamaConfiguration
     {
-        public string ScriptFullpath { get; set; } = $"C:\\temp\\diaporama\\diaporama.json";
+        public string ScriptFullpath { get; set; } = $"C:\\Users\\Antonin\\Documents\\Hochzeit\\Diaporama\\diaporama.json";
     }
 }

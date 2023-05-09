@@ -35,6 +35,6 @@ namespace DiaporamaPlayer
             return polaroid;
         }
 
-        private double ComputePolaroidSize(double pictureMarginRatio) =>screenSize.Height * (1 - 2 * pictureMarginRatio);
+        private double ComputePolaroidSize(double pictureMarginRatio) => screenSize.Height * (1 - 2 * pictureMarginRatio);
     }
 }

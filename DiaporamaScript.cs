@@ -14,7 +14,7 @@ namespace DiaporamaPlayer
         public float MaximumAbsoluteStartAngleDeviation { get; set; }
         public float BigPictureMarginRatio { get; set; }
         public float SmallPictureMarginRatio { get; set; }
-        public string ImageFolder { get; set; } = string.Empty;
-        public string SongFullpath { get; set; } = String.Empty;
+        public string DataFolder { get; set; } = string.Empty;
+        public string SongFilename { get; set; } = string.Empty;
     }
 }

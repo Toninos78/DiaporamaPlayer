@@ -30,6 +30,13 @@ namespace DiaporamaPlayer
                 var player = new Player(canvas, configuration.ScriptFullpath);
                 player.PlayAndExit();
             }
+            else if (keyEventArgs.Key == Key.Escape)
+            {
+                if (isDiaporamaStarted)
+                {
+                    Application.Current.Shutdown();
+                }
+            }
         }
     }
 }

@@ -30,8 +30,9 @@ namespace DiaporamaPlayer
             var fadeoutAnimator = new PanelChildFadoutAnimator(this.destinationPanel, script.FadeoutDuration);
             var polaroidRegistrer = new LayoutRegistrer<PolaroidUserControl>(script.MaximumPicturesPerLayout);
 
-#if DEBUG
-            this.soundPlayer.PlayIfSet(script.SongFullpath);
+#if !DEBUG
+            string songFullPath = Path.Combine(script.DataFolder, script.SongFilename);
+            this.soundPlayer.PlayIfSet(songFullPath);
 #endif
 
             await Task.Delay(script.StartTemporisationDuration);
@@ -67,7 +68,7 @@ namespace DiaporamaPlayer
         private async Task<PolaroidUserControl> PlayStepAsync(DiaporamaScript script, DiaporamaStep currentStep)
         {
             float pictureMarginRatio = currentStep.FinalLayout == FinalLayout.Full ? script.BigPictureMarginRatio : script.SmallPictureMarginRatio;
-            string pictureFullPath = Path.Combine(script.ImageFolder, currentStep.Filename);
+            string pictureFullPath = Path.Combine(script.DataFolder, currentStep.Filename);
 
             PolaroidUserControl polaroid = CreatePolaroid(polaroidFactory, pictureFullPath, pictureMarginRatio);
 
